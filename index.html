@@ -47,6 +47,12 @@ main{position:relative;z-index:3;max-width:640px;margin:0 auto;padding:0 20px}
 .hero .place{font-family:"Special Elite",monospace;letter-spacing:.5em;color:var(--muted);font-size:13px;margin-bottom:28px}
 .hero h1{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:clamp(44px,12vw,84px);letter-spacing:.08em;line-height:1;color:#efeae1}
 .hero .sub{font-family:"Special Elite",monospace;color:var(--amber);letter-spacing:.3em;font-size:13px;margin-top:22px}
+body.intro{overflow:hidden}
+.start{margin-top:70px;background:none;border:1px solid rgba(201,154,75,.5);color:var(--amber);font-family:"Noto Serif Thai",serif;font-size:15px;letter-spacing:.12em;
+  padding:12px 28px;border-radius:999px;cursor:pointer;animation:pulse 2.4s ease-in-out infinite;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.start[disabled]{opacity:.5;animation:none;cursor:default}
+.start-note{margin-top:16px;font-size:12px;color:var(--muted);letter-spacing:.04em}
+body:not(.intro) .start,body:not(.intro) .start-note{display:none}
 .hero .scroll{margin-top:80px;color:var(--dim);font-size:13px;font-family:"Special Elite",monospace;letter-spacing:.3em;animation:pulse 2.4s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.25}50%{opacity:.9}}
 .feather{width:26px;height:auto;opacity:.75}
@@ -234,7 +240,8 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   <div class="place r">LOS ANGELES</div>
   <h1 class="r">DAMON<br>CROWE</h1>
   <div class="sub r">AFTERMATH · L.A. BY NIGHT</div>
-  <div class="scroll r">SCROLL</div>
+  <button class="start r" id="startBtn" type="button">แตะเพื่อเริ่มเรื่อง</button>
+  <div class="start-note r">🎧 เรื่องนี้มีเพลงประกอบ · เปิดเสียงเพื่ออรรถรส</div>
 </header>
 
 <!-- I -->
@@ -581,6 +588,16 @@ function fadeTo(track){
 }
 (function(){
   var t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';document.head.appendChild(t);
+  // one tap at the start unlocks sound for the whole story
+  document.body.classList.add('intro');
+  var sb=$('startBtn');sb.disabled=true;sb.textContent='กำลังเตรียมเพลง…';
+  var waitIv=setInterval(function(){if(ytReady||location.protocol==='file:'){clearInterval(waitIv);sb.disabled=false;sb.textContent='แตะเพื่อเริ่มเรื่อง';}},200);
+  setTimeout(function(){if(sb.disabled){clearInterval(waitIv);sb.disabled=false;sb.textContent='แตะเพื่อเริ่มเรื่อง';}},6000); // YouTube slow or blocked: let them read anyway
+  sb.addEventListener('click',function(){
+    if(ytReady&&!unlocked&&!priming&&location.protocol!=='file:'){priming=true;player.mute();player.playVideo();}
+    document.body.classList.remove('intro');
+    var first=document.querySelector('section.chapter');if(first)first.scrollIntoView({behavior:'smooth'});
+  });
   $('tapeBtn').addEventListener('click',function(){toggle('kho');});
   $('tapeBtn2').addEventListener('click',function(){toggle('passive');});
   $('npPlay').addEventListener('click',function(){toggle(current);});
