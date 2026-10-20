@@ -160,6 +160,9 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
 .ending.lit h3{transition-delay:3s}
 .ending.lit .tag{transition-delay:4.2s}
 .ending.lit .feather{transition-delay:5s}
+.ending.lit .tape-end{transition-delay:6s}
+.ending .tape-end{margin:28px auto 0;display:none}
+.ending .tape-end.need,.ending .tape-end.failed{display:flex}
 @media (prefers-reduced-motion:reduce){.ending.lit .bgimg{animation:none;opacity:.92}.ending .r{transition:none}.ending.lit .r{transition-delay:0s!important}}
 .ending::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
   background:linear-gradient(180deg,var(--bg) 0%,rgba(11,12,14,.15) 22%,rgba(11,12,14,.1) 50%,rgba(11,12,14,.85) 78%,var(--bg) 100%)}
@@ -199,6 +202,11 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   cursor:pointer;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease;-webkit-tap-highlight-color:transparent}
 .np.show{opacity:1;pointer-events:auto;transform:none}
 .np b{color:var(--amber);font-weight:400}
+.np button{background:none;border:0;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer;padding:4px 2px;-webkit-tap-highlight-color:transparent}
+.np #npMute{font-family:"Noto Serif Thai",serif;font-size:11px;letter-spacing:0;color:var(--muted);border-left:1px solid #333;padding-left:10px}
+.np #npMute[aria-pressed="true"]{color:var(--amber)}
+.np input[type=range]{width:72px;accent-color:var(--amber)}
+@media (max-width:380px){.np input[type=range]{width:54px}}
 
 /* reveal */
 .r{opacity:0;transform:translateY(14px);transition:opacity 1.2s ease,transform 1.2s ease}
@@ -393,14 +401,6 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
 <section class="chapter">
   <div class="chapter-head r"><span class="num">V</span><h2>THE MAN WHO CAME BACK</h2><span class="line"></span></div>
 
-  <div class="tape r" id="tape2" data-track="passive">
-    <button class="tape-btn" id="tapeBtn2" type="button" aria-label="เล่นเพลง Passive ของ A Perfect Circle">
-      <span class="reels" aria-hidden="true"><i></i><i></i></span>
-      <span class="tape-text"><b>Passive</b><small>A PERFECT CIRCLE</small></span>
-      <span class="tape-ico" aria-hidden="true">▶</span>
-    </button>
-    <div class="tape-hint">แตะเพื่อเปิดเพลง</div>
-  </div>
 
   <p class="r whisper">ชั้นบนของอาคาร หลังหน้าต่างที่มืดสนิท</p>
   <p class="r">ชายในแจ็กเก็ตหนังสีดำยืนมองลงไปที่ถนน</p>
@@ -439,11 +439,23 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   <h3 class="r">Damon Crowe กลับมาแล้ว</h3>
   <div class="tag r">He remembers what you need forgotten.</div>
   <svg class="feather r" style="color:var(--silver);height:58px"><use href="#feather"/></svg>
+  <div class="tape tape-end r" id="tape2" data-track="passive">
+    <button class="tape-btn" id="tapeBtn2" type="button" aria-label="เล่นเพลง Passive ของ A Perfect Circle">
+      <span class="reels" aria-hidden="true"><i></i><i></i></span>
+      <span class="tape-text"><b>Passive</b><small>A PERFECT CIRCLE</small></span>
+      <span class="tape-ico" aria-hidden="true">▶</span>
+    </button>
+    <div class="tape-hint">แตะเพื่อเปิดเพลง</div>
+  </div>
 </section>
 
 </main>
 <footer>L.A. BY NIGHT · VAMPIRE: THE MASQUERADE</footer>
-<button class="np" id="np" type="button" aria-label="หยุดหรือเล่นเพลงต่อ">♪ <span id="npName">KEEP HOLDING ON</span> <b id="npIco">❚❚</b></button>
+<div class="np" id="np" role="group" aria-label="ควบคุมเพลง">
+  <button type="button" id="npPlay" aria-label="หยุดหรือเล่นเพลงต่อ">♪ <span id="npName">KEEP HOLDING ON</span> <b id="npIco">❚❚</b></button>
+  <button type="button" id="npMute" aria-pressed="false">ปิดเสียง</button>
+  <input type="range" id="npVol" min="0" max="100" step="1" aria-label="ระดับเสียง">
+</div>
 
 <script>
 // reveal on scroll
@@ -505,6 +517,9 @@ document.querySelectorAll('.dossier').forEach(function(d){
 // music: Keep Holding On (Angela, ch. III) -> Passive (Damon, ch. V)
 var TRACKS={kho:{id:'trp6FZs2zlM',name:'KEEP HOLDING ON',tape:'tape'},passive:{id:'oMe4kVNKvNk',name:'PASSIVE',tape:'tape2'}};
 var player=null,ytReady=false,unlocked=false,priming=false,current='kho',pending=null,playing=false,khoAuto=false,passiveAuto=false,userPaused=false;
+function ss(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v);}catch(e){return null;}}
+var VOL=+(ss('vol')||60),MUTED=ss('muted')==='1';
+function apply(){if(!ytReady)return;player.setVolume(VOL);MUTED?player.mute():player.unMute();}
 function $(id){return document.getElementById(id);}
 function ytFail(){
   ['tape','tape2'].forEach(function(id){var t=$(id);if(!t)return;t.classList.add('failed');
@@ -520,6 +535,7 @@ function paint(){
   });
   $('npName').textContent=TRACKS[current].name;
   $('npIco').textContent=playing?'❚❚':'▶';
+  $('npMute').textContent=MUTED?'เปิดเสียง':'ปิดเสียง';$('npMute').setAttribute('aria-pressed',MUTED);$('npVol').value=VOL;
   if(playing)$('np').classList.add('show');
 }
 function onYouTubeIframeAPIReady(){
@@ -527,15 +543,15 @@ function onYouTubeIframeAPIReady(){
   if(/^https?:/.test(location.protocol)){pv.origin=location.origin;pv.widget_referrer=location.href;}
   player=new YT.Player('yt',{width:200,height:200,videoId:TRACKS.kho.id,host:'https://www.youtube.com',playerVars:pv,
     events:{
-      onReady:function(e){ytReady=true;e.target.setVolume(75);if(pending){var t=pending;pending=null;play(t);}},
+      onReady:function(e){ytReady=true;apply();if(pending){var t=pending;pending=null;play(t);}},
       onError:function(){ytFail();},
       onStateChange:function(e){
         if(priming&&e.data===YT.PlayerState.PLAYING){ // silent unlock done
-          priming=false;unlocked=true;player.pauseVideo();player.seekTo(0,true);player.unMute();player.setVolume(75);return;}
+          priming=false;unlocked=true;player.pauseVideo();player.seekTo(0,true);apply();return;}
         if(priming)return;
         playing=e.data===YT.PlayerState.PLAYING;
         if(playing)unlocked=true;
-        if(e.data===YT.PlayerState.ENDED){playing=false;$('np').classList.remove('show');}
+        if(e.data===YT.PlayerState.ENDED){player.seekTo(0,true);player.playVideo();return;} // loop the scene's song
         paint();
       }}});
 }
@@ -543,25 +559,34 @@ function play(track){
   if(location.protocol==='file:'){ytFail();return;}
   if(!ytReady){pending=track;return;}
   userPaused=false;
-  if(track!==current){current=track;player.setVolume(75);player.unMute();player.loadVideoById(TRACKS[track].id);}
-  else{player.unMute();player.setVolume(75);player.playVideo();}
+  apply();
+  if(track!==current){current=track;player.loadVideoById(TRACKS[track].id);}
+  else player.playVideo();
+  blockedCheck(track);
   if(track==='kho')khoAuto=true;else passiveAuto=true;
 }
 function toggle(track){
   if(ytReady&&track===current&&playing){player.pauseVideo();userPaused=true;return;}
   play(track);
 }
+function blockedCheck(track){
+  setTimeout(function(){if(playing||userPaused)return;var t=$(TRACKS[track].tape);if(t)t.classList.add('need');
+    if(t&&!t.classList.contains('failed'))t.querySelector('.tape-hint').textContent='เสียงถูกบล็อก · แตะตลับเทปเพื่อเปิดเพลง';},4000);
+}
 function fadeTo(track){
   if(!playing){play(track);return;}
   var v=player.getVolume();
   var iv=setInterval(function(){v-=5;
-    if(v<=0){clearInterval(iv);play(track);}else player.setVolume(v);},120);
+    if(v<=0){clearInterval(iv);play(track);}else player.setVolume(v);},Math.max(60,1800/Math.max(VOL,1)*5/5));
 }
 (function(){
   var t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';document.head.appendChild(t);
   $('tapeBtn').addEventListener('click',function(){toggle('kho');});
   $('tapeBtn2').addEventListener('click',function(){toggle('passive');});
-  $('np').addEventListener('click',function(){toggle(current);});
+  $('npPlay').addEventListener('click',function(){toggle(current);});
+  $('npMute').addEventListener('click',function(){MUTED=!MUTED;ss('muted',MUTED?1:0);apply();paint();});
+  $('npVol').addEventListener('input',function(e){VOL=+e.target.value;MUTED=false;ss('vol',VOL);ss('muted',0);apply();paint();});
+  paint();$('np').classList.remove('show');
   // any tap on the page (e.g. flipping the card) quietly unlocks sound for later scenes
   document.addEventListener('click',function(e){
     if(unlocked||priming||!ytReady||location.protocol==='file:')return;
@@ -574,11 +599,12 @@ function fadeTo(track){
     if(!x[0].isIntersecting||khoAuto||!unlocked||userPaused||playing)return;
     play('kho');
   },{threshold:.6}).observe($('tape'));
-  // ch. V: hand over to Passive
+  // ending: Angela's song fades as the screen goes dark, Passive rises with Damon's face
   new IntersectionObserver(function(x){
-    if(!x[0].isIntersecting||passiveAuto||!unlocked||userPaused)return;
+    if(!x[0].isIntersecting||passiveAuto)return;
+    if(!unlocked||userPaused){$('tape2').classList.add('need');return;}
     passiveAuto=true;fadeTo('passive');
-  },{threshold:.4}).observe($('tape2'));
+  },{threshold:.6}).observe($('ending'));
 })();
 
 // rain
