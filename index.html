@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Damon Crowe — Aftermath</title>
 <meta name="description" content="L.A. by Night — หลายเดือนหลังเหตุการณ์ที่ Hellhole">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,10 +83,13 @@ p.center{text-align:center}
 /* business card */
 .card-zone{margin:3em 0 1em;display:flex;flex-direction:column;align-items:center;gap:14px}
 .card{position:relative;width:min(340px,86vw);height:calc(min(340px,86vw) / 1.75);-webkit-perspective:1200px;perspective:1200px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.card-inner{position:relative;width:100%;height:100%;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;-webkit-transition:-webkit-transform .9s cubic-bezier(.2,.7,.2,1);transition:transform .9s cubic-bezier(.2,.7,.2,1);-webkit-transform:rotateY(0deg);transform:rotateY(0deg)}
-.card.flipped .card-inner{-webkit-transform:rotateY(180deg);transform:rotateY(180deg)}
-.front{-webkit-transform:rotateY(0deg) translateZ(1px);transform:rotateY(0deg) translateZ(1px)}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:4px;
+.card-inner{position:relative;width:100%;height:100%;-webkit-transition:-webkit-transform .32s ease-in;transition:transform .32s ease-in;-webkit-transform:scaleX(1);transform:scaleX(1)}
+.card-inner.squash{-webkit-transform:scaleX(0);transform:scaleX(0)}
+.card-inner.grow{-webkit-transition:-webkit-transform .38s cubic-bezier(.2,.8,.2,1.1);transition:transform .38s cubic-bezier(.2,.8,.2,1.1)}
+.card .back{display:none}
+.card.flipped .front{display:none}
+.card.flipped .back{display:flex}
+.face{position:absolute;inset:0;border-radius:4px;
   background:linear-gradient(135deg,#232428,#17181a);box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);padding:22px 24px;overflow:hidden}
 .face::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.05),transparent 60%);pointer-events:none}
 .front .name{font-family:"Cormorant Garamond",serif;font-weight:700;letter-spacing:.2em;font-size:22px;color:#ece7de}
@@ -93,7 +97,7 @@ p.center{text-align:center}
 .front .bottom{position:absolute;left:24px;bottom:18px;font-family:"Special Elite",monospace;font-size:10.5px;color:var(--silver);line-height:1.6}
 .front .bottom i{font-family:"Cormorant Garamond",serif;font-size:13px;color:#d4d0c8}
 .front .feather{position:absolute;right:20px;bottom:16px;width:18px;opacity:.6}
-.back{-webkit-transform:rotateY(180deg) translateZ(1px);transform:rotateY(180deg) translateZ(1px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-left:34px}
+.back{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-left:34px}
 .back .hand{font-family:"Caveat",cursive;font-size:30px;color:#c8ccd1;line-height:1.2;transform:rotate(-3deg)}
 .back .hand.please{font-size:32px;color:#eef0f2;margin-top:6px;margin-left:28px}
 .back .feather{position:absolute;right:18px;bottom:14px;width:12px;opacity:.3}
@@ -164,6 +168,37 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
 @media (min-width:900px){.ending .bgimg{object-fit:contain;object-position:50% 30%;
   -webkit-mask-image:linear-gradient(90deg,transparent 22%,#000 38%,#000 62%,transparent 78%);
   mask-image:linear-gradient(90deg,transparent 22%,#000 38%,#000 62%,transparent 78%)}}
+
+
+/* music: Keep Holding On (Angela's song) */
+.tape{margin:1.4em auto 2.6em;display:flex;flex-direction:column;align-items:center;gap:10px}
+.tape-btn{display:flex;align-items:center;gap:14px;width:min(320px,86vw);padding:12px 16px;border-radius:10px;cursor:pointer;
+  background:linear-gradient(180deg,#1d1e22,#141518);border:1px solid rgba(201,154,75,.35);color:var(--ink);font:inherit;text-align:left;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.tape-btn:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.reels{display:flex;gap:8px;padding:8px 10px;background:#0d0e10;border-radius:6px;border:1px solid #2a2b2f}
+.reels i{width:18px;height:18px;border-radius:50%;border:3px solid #6d6a64;position:relative;display:block}
+.reels i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:#6d6a64}
+.reels i::before{content:"";position:absolute;left:50%;top:-1px;width:2px;height:6px;margin-left:-1px;background:#0d0e10;z-index:1}
+.tape.playing .reels i{animation:spin 2.4s linear infinite;border-color:var(--amber)}
+.tape.playing .reels i::after{background:var(--amber)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tape-text{flex:1;display:flex;flex-direction:column;line-height:1.3}
+.tape-text b{font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:500;font-size:19px;color:#efeae1}
+.tape-text small{font-family:"Special Elite",monospace;font-size:10px;letter-spacing:.25em;color:var(--muted)}
+.tape-ico{font-size:15px;color:var(--amber);width:22px;text-align:center}
+.tape-hint{font-family:"Noto Serif Thai",serif;font-size:12px;color:var(--amber);letter-spacing:.06em;animation:pulse 2s ease-in-out infinite}
+.tape.started .tape-hint{animation:none;color:var(--dim)}
+.yt-wrap{width:200px;height:0;overflow:hidden;border-radius:8px;transition:height .6s ease;opacity:.85}
+.tape.started .yt-wrap{height:200px}
+.yt-wrap iframe{display:block;width:200px;height:200px;border:0}
+.tape.failed .yt-wrap{height:0}
+.tape-hint a{color:var(--amber)}
+.np{position:fixed;right:16px;bottom:16px;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  background:rgba(20,21,24,.92);border:1px solid rgba(201,154,75,.4);color:var(--ink);font-family:"Special Elite",monospace;font-size:11px;letter-spacing:.12em;
+  cursor:pointer;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease;-webkit-tap-highlight-color:transparent}
+.np.show{opacity:1;pointer-events:auto;transform:none}
+.np b{color:var(--amber);font-weight:400}
 
 /* reveal */
 .r{opacity:0;transform:translateY(14px);transition:opacity 1.2s ease,transform 1.2s ease}
@@ -287,6 +322,17 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   <p class="r center"><span class="em" style="color:var(--amber);letter-spacing:.1em">Crowe Investigations</span></p>
 
   <p class="r">ภาพความทรงจำวันที่พวกเขาเลิกกันย้อนกลับมา</p>
+
+  <div class="tape r" id="tape">
+    <button class="tape-btn" id="tapeBtn" type="button" aria-label="เล่นเพลง Keep Holding On ของ Avril Lavigne">
+      <span class="reels" aria-hidden="true"><i></i><i></i></span>
+      <span class="tape-text"><b>Keep Holding On</b><small>AVRIL LAVIGNE</small></span>
+      <span class="tape-ico" id="tapeIco" aria-hidden="true">▶</span>
+    </button>
+    <div class="tape-hint" id="tapeHint">แตะเพื่อเปิดเพลง</div>
+    <div class="yt-wrap"><div id="yt"></div></div>
+  </div>
+
   <p class="beat r">และเธอไม่เคยพบเขาอีกเลย</p>
 
   <p class="r">ถึงอย่างนั้น เธอก็ยังได้ยินเรื่องของเขาผ่านคนอื่นเสมอ</p>
@@ -367,7 +413,7 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   <p class="r">ข้างล่าง ไฟหน้ารถสว่างขึ้น</p>
   <p class="r">Angela ขับออกไปโดยไม่หันกลับมามอง</p>
   <p class="r">Damon มองไฟท้ายสีแดงเลือนหายไปในสายฝน</p>
-  <p class="beat r whisper">จนลับสายตา</p>
+  <p class="beat r whisper" id="fadeMark">จนลับสายตา</p>
 
   <p class="r">หัวใจของเขาไม่ได้เต้นมาหลายเดือนแล้ว</p>
   <p class="beat r">ถึงอย่างนั้น ความรู้สึกก็ยังคงอยู่</p>
@@ -388,6 +434,7 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
 
 </main>
 <footer>L.A. BY NIGHT · VAMPIRE: THE MASQUERADE</footer>
+<button class="np" id="np" type="button" aria-label="หยุดหรือเล่นเพลงต่อ">♪ KEEP HOLDING ON <b id="npIco">❚❚</b></button>
 
 <script>
 // reveal on scroll
@@ -410,14 +457,22 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   var f=document.querySelector('footer');if(f)gated.push(f);
   gated.forEach(function(e){e.classList.add('gated')});
   zone.classList.add('waiting');
+  var inner=c.querySelector('.card-inner'),busy=false;
+  function turn(){
+    if(busy)return;busy=true;
+    inner.classList.remove('grow');inner.classList.add('squash');
+    setTimeout(function(){
+      c.classList.toggle('flipped');
+      inner.classList.add('grow');inner.classList.remove('squash');
+      setTimeout(function(){busy=false;},400);
+    },330);
+  }
   function flip(){
-    if(opened){c.classList.toggle('flipped');return;}
+    turn();
+    if(opened)return;
     opened=true;zone.classList.remove('waiting');zone.classList.add('done');
-    // let the browser drop the nudge first, then start the flip on the next frame
-    void c.offsetWidth;
-    requestAnimationFrame(function(){requestAnimationFrame(function(){c.classList.add('flipped');});});
     h.innerHTML='<span class="arrow">↓</span>เลื่อนลงเพื่ออ่านต่อ';
-    setTimeout(function(){gated.forEach(function(e){e.classList.remove('gated')});},700);
+    setTimeout(function(){gated.forEach(function(e){e.classList.remove('gated')});},900);
   }
   c.addEventListener('click',flip);
   c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();flip();}});
@@ -436,6 +491,55 @@ document.querySelectorAll('.dossier').forEach(function(d){
   if(!('IntersectionObserver' in window)){e.classList.add('lit');return;}
   var o=new IntersectionObserver(function(x){if(x[0].isIntersecting){e.classList.add('lit');o.disconnect();}},{threshold:.6});
   o.observe(e);
+})();
+
+// music: Keep Holding On — Avril Lavigne (official audio via YouTube)
+var player=null,ytReady=false,wantPlay=false,fading=false,faded=false;
+function ytFail(){
+  var t=document.getElementById('tape');if(!t)return;t.classList.add('failed');
+  document.getElementById('tapeHint').innerHTML='เปิดเพลงในหน้านี้ไม่ได้ · <a href="https://www.youtube.com/watch?v=trp6FZs2zlM" target="_blank" rel="noopener">ฟังบน YouTube ↗</a>';
+}
+function onYouTubeIframeAPIReady(){
+  var pv={playsinline:1,rel:0,modestbranding:1,controls:1};
+  if(/^https?:/.test(location.protocol)){pv.origin=location.origin;pv.widget_referrer=location.href;}
+  player=new YT.Player('yt',{width:200,height:200,videoId:'trp6FZs2zlM',host:'https://www.youtube.com',
+    playerVars:pv,
+    events:{
+      onReady:function(e){ytReady=true;e.target.setVolume(75);if(wantPlay)e.target.playVideo();},
+      onError:function(){ytFail();},
+      onStateChange:function(e){
+        var playing=e.data===YT.PlayerState.PLAYING;
+        document.getElementById('tape').classList.toggle('playing',playing);
+        document.getElementById('tapeIco').textContent=playing?'❚❚':'▶';
+        document.getElementById('npIco').textContent=playing?'❚❚':'▶';
+        if(playing)document.getElementById('np').classList.add('show');
+        if(e.data===YT.PlayerState.ENDED)document.getElementById('np').classList.remove('show');
+      }}});
+}
+(function(){
+  var t=document.createElement('script');t.src='https://www.youtube.com/iframe_api';document.head.appendChild(t);
+  var tape=document.getElementById('tape'),btn=document.getElementById('tapeBtn'),hint=document.getElementById('tapeHint');
+  function toggle(){
+    tape.classList.add('started');hint.textContent='เพลงของ Angela';
+    if(location.protocol==='file:'){ytFail();return;}
+    if(!ytReady){wantPlay=true;return;}
+    if(player.getPlayerState()===YT.PlayerState.PLAYING)player.pauseVideo();
+    else{player.setVolume(75);player.playVideo();}
+  }
+  btn.addEventListener('click',toggle);
+  document.getElementById('np').addEventListener('click',toggle);
+  // fade out as Damon watches the tail lights disappear
+  var mark=document.getElementById('fadeMark');
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(x){
+      if(!x[0].isIntersecting||faded||!ytReady)return;
+      if(player.getPlayerState()!==YT.PlayerState.PLAYING)return;
+      faded=true;var v=player.getVolume();
+      var iv=setInterval(function(){v-=3;
+        if(v<=0){clearInterval(iv);player.pauseVideo();player.setVolume(75);document.getElementById('np').classList.remove('show');}
+        else player.setVolume(v);},180);
+    },{threshold:.6}).observe(mark);
+  }
 })();
 
 // rain
