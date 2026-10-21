@@ -169,6 +169,22 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   mask-image:linear-gradient(90deg,transparent 22%,#000 38%,#000 62%,transparent 78%)}}
 
 
+
+/* music: one tap to start, then plays by itself */
+body.intro{overflow:hidden}
+.start{margin-top:70px;background:none;border:1px solid rgba(201,154,75,.5);color:var(--amber);font-family:"Noto Serif Thai",serif;font-size:15px;letter-spacing:.12em;
+  padding:12px 28px;border-radius:999px;cursor:pointer;animation:pulse 2.4s ease-in-out infinite;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.start-note{margin-top:16px;font-size:12px;color:var(--muted);letter-spacing:.04em}
+body:not(.intro) .start,body:not(.intro) .start-note{display:none}
+footer .credit{font-size:10px;letter-spacing:.08em;color:#45423e}
+.np{position:fixed;right:16px;bottom:16px;z-index:20;display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:999px;
+  background:rgba(20,21,24,.92);border:1px solid rgba(201,154,75,.4);color:var(--ink);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease}
+.np.show{opacity:1;pointer-events:auto;transform:none}
+.np-name{color:var(--amber)}
+.np button{background:none;border:0;color:var(--muted);font-family:"Noto Serif Thai",serif;font-size:12px;cursor:pointer;padding:4px 2px;-webkit-tap-highlight-color:transparent}
+.np button[aria-pressed="true"]{color:var(--amber)}
+.np input[type=range]{width:80px;accent-color:var(--amber)}
+
 /* reveal */
 .r{opacity:0;transform:translateY(14px);transition:opacity 1.2s ease,transform 1.2s ease}
 .r.in{opacity:1;transform:none}
@@ -195,7 +211,8 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   <div class="place r">LOS ANGELES</div>
   <h1 class="r">DAMON<br>CROWE</h1>
   <div class="sub r">AFTERMATH · L.A. BY NIGHT</div>
-  <div class="scroll r">SCROLL</div>
+  <button class="start r" id="startBtn" type="button">แตะเพื่อเริ่มเรื่อง</button>
+  <div class="start-note r">🎧 เรื่องนี้มีเพลงประกอบ · เปิดเสียงเพื่ออรรถรส</div>
 </header>
 
 <!-- I -->
@@ -253,7 +270,7 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
 <section class="chapter">
   <div class="chapter-head r"><span class="num">III</span><h2>THE PEOPLE LEFT BEHIND</h2><span class="line"></span></div>
 
-  <p class="r whisper">หลายเดือนต่อมา ในห้องนิติเวชประจำ LAPD</p>
+  <p class="r whisper" id="musicStart">หลายเดือนต่อมา ในห้องนิติเวชประจำ LAPD</p>
 
   
 
@@ -394,7 +411,13 @@ footer{position:relative;z-index:3;text-align:center;color:var(--dim);font-size:
   </section>
 
 </main>
-<footer>L.A. BY NIGHT · VAMPIRE: THE MASQUERADE</footer>
+<footer>L.A. BY NIGHT · VAMPIRE: THE MASQUERADE<br><span class="credit">Music: “Romantic Moonlight” · surprising_media · Pixabay</span></footer>
+<audio id="bgm" src="angela.mp3" preload="auto" loop playsinline></audio>
+<div class="np" id="np" role="group" aria-label="ควบคุมเพลง">
+  <span class="np-name">♪</span>
+  <button type="button" id="npMute" aria-pressed="false">ปิดเสียง</button>
+  <input type="range" id="npVol" min="0" max="100" step="1" aria-label="ระดับเสียง">
+</div>
 
 <script>
 // reveal on scroll
@@ -451,6 +474,35 @@ document.querySelectorAll('.dossier').forEach(function(d){
   if(!('IntersectionObserver' in window)){e.classList.add('lit');return;}
   var o=new IntersectionObserver(function(x){if(x[0].isIntersecting){e.classList.add('lit');o.disconnect();}},{threshold:.6});
   o.observe(e);
+})();
+
+// music: Angela's theme — starts in ch. III, fades out as the ending goes dark
+(function(){
+  var A=document.getElementById('bgm'),btn=document.getElementById('startBtn'),np=document.getElementById('np'),
+      mute=document.getElementById('npMute'),vol=document.getElementById('npVol');
+  function ss(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v);}catch(e){return null;}}
+  var VOL=+(ss('vol')||55)/100,MUTED=ss('muted')==='1',ctx=null,gain=null,level=0,phase='idle',raf=0;
+  function out(v){level=v;var g=MUTED?0:v*VOL;if(gain)gain.gain.value=g;else A.volume=Math.max(0,Math.min(1,g));}
+  function fade(to,ms,done){cancelAnimationFrame(raf);var from=level,t0=performance.now();
+    (function step(t){var k=Math.min(1,(t-t0)/ms);out(from+(to-from)*k);if(k<1)raf=requestAnimationFrame(step);else if(done)done();})(t0);}
+  function ui(){mute.textContent=MUTED?'เปิดเสียง':'ปิดเสียง';mute.setAttribute('aria-pressed',MUTED);vol.value=Math.round(VOL*100);}
+  document.body.classList.add('intro');ui();
+  btn.addEventListener('click',function(){
+    // Web Audio lets fades work on iPhone too (Safari ignores audio.volume)
+    if(!ctx&&location.protocol!=='file:'){try{var AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();
+      var src=ctx.createMediaElementSource(A);gain=ctx.createGain();src.connect(gain);gain.connect(ctx.destination);}catch(e){ctx=null;gain=null;}}
+    if(ctx&&ctx.resume)ctx.resume();
+    out(0);var p=A.play();if(p&&p.then)p.then(function(){A.pause();A.currentTime=0;phase='ready';}).catch(function(){phase='ready';});else phase='ready';
+    document.body.classList.remove('intro');
+    var first=document.querySelector('section.chapter');if(first)first.scrollIntoView({behavior:'smooth'});
+  });
+  function start(){if(phase==='playing'||phase==='done')return;phase='playing';out(0);
+    var p=A.play();if(p&&p.catch)p.catch(function(){phase='ready';});np.classList.add('show');fade(1,5000);}
+  mute.addEventListener('click',function(){MUTED=!MUTED;ss('muted',MUTED?1:0);out(level);ui();if(phase==='ready'&&!MUTED)start();});
+  vol.addEventListener('input',function(e){VOL=+e.target.value/100;MUTED=false;ss('vol',Math.round(VOL*100));ss('muted',0);out(level);ui();});
+  if(!('IntersectionObserver' in window))return;
+  new IntersectionObserver(function(x){if(x[0].isIntersecting&&phase==='ready')start();},{threshold:.5}).observe(document.getElementById('musicStart'));
+  new IntersectionObserver(function(x){if(x[0].isIntersecting&&phase==='playing'){phase='done';fade(0,4000,function(){A.pause();np.classList.remove('show');});}},{threshold:.6}).observe(document.getElementById('ending'));
 })();
 
 // rain
